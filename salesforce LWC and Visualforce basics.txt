@@ -1,0 +1,234 @@
+Lightning Web Components
+
+Bike Card Project
+BikeCard.html
+<template>
+    <div>
+        <div>Name: {name}</div>
+        <div>Description: {description}</div>
+        <lightning-badge label={material}></lightning-badge>
+        <lightning-badge label={category}></lightning-badge>
+        <div>Price: {price}</div>
+        <div><img src={pictureUrl}/></div>
+    </div>
+</template>
+BikeCard.js
+import { LightningElement } from 'lwc';
+export default class BikeCard extends LightningElement {
+   name = 'Electra X4';
+   description = 'A sweet bike built for comfort.';
+   category = 'Mountain';
+   material = 'Steel';
+   price = '$2,700';
+   pictureUrl = 'https://s3-us-west-1.amazonaws.com/sfdc-demo/ebikes/electrax4.jpg';
+ }
+
+BikeCard.js-meta.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- The apiVersion may need to be increased for the current release -->
+    <apiVersion>52.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Product Card</masterLabel>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+    </targets>
+</LightningComponentBundle>
+
+Selector.css
+body {
+  margin: 0;
+}
+.price {
+    color: green;
+    font-weight: bold;
+  } 
+.wrapper{
+  min-height: 100vh;
+  background: #ccc;
+  display: flex;
+  flex-direction: column;
+}
+.header, .footer{
+  height: 50px;
+  background: rgb(255, 255, 255);
+  color: rgb(46, 46, 46);
+  font-size: x-large;
+  padding: 10px;
+}
+.content {
+  display: flex;
+  flex: 1;
+  background: #999;
+  color: #000; 
+}
+.columns{
+  display: flex;
+  flex:1;
+}
+.main{
+  flex: 1;
+  order: 2;
+  background: #eee;
+}
+.sidebar-first{
+  width: 20%;
+  background: #ccc;
+  order: 1;
+}
+.sidebar-second{ 
+  width: 30%;
+  order: 3;
+  background: #ddd;
+}
+.container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+ }
+Selector.html
+<template>
+        <div class="wrapper">
+        <header class="header">Available Bikes for {name}</header>
+        <section class="content">
+            <div class="columns">
+            <main class="main" >
+                <c-list onproductselected={handleProductSelected}></c-list>
+            </main>
+            <aside class="sidebar-second">
+                <c-detail product-id={selectedProductId}></c-detail>
+            </aside>
+            </div>
+        </section>
+        </div>
+    <template if:true={product}>
+        <div class="container">
+            <div>{product.fields.Name.value}</div>
+            <div class="price">{product.fields.MSRP__c.displayValue}</div>
+            <div class="description">{product.fields.Description__c.value}</div>
+            <img class="product-img" src={product.fields.Picture_URL__c.value}></img>
+            <p>
+                <lightning-badge label={product.fields.Material__c.value}></lightning-badge>
+                <lightning-badge label={product.fields.Level__c.value}></lightning-badge>
+            </p>
+            <p>
+                <lightning-badge label={product.fields.Category__c.value}></lightning-badge>
+            </p>
+        </div>
+    </template>
+    <template if:false={product}>
+        <div>Select a bike</div>
+    </template>
+</template>
+
+Selector.js
+import { LightningElement, wire } from 'lwc';
+import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
+import Id from '@salesforce/user/Id';
+import NAME_FIELD from '@salesforce/schema/User.Name';
+const fields = [NAME_FIELD];
+export default class Selector extends LightningElement {
+    selectedProductId;
+    handleProductSelected(evt) {
+        this.selectedProductId = evt.detail;
+    }
+    userId = Id;
+    @wire(getRecord, { recordId: '$userId', fields })
+    user;
+    get name() {
+        return getFieldValue(this.user.data, NAME_FIELD);
+    }
+}
+Selector.js-meta.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>48.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__AppP1`		`1qw\+
+age</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+    </targets>
+</LightningComponentBundle>
+
+Visualforce Basics
+
+Create & Edit Visualforce Pages
+DisplayImage.vfp
+<apex:page showHeader="false">
+    <apex:image url="https://developer.salesforce.com/files/salesforce-developer-network-logo.png"/>
+</apex:page>
+Use Simple Variables and Formulas
+DisplayUserInfo.vfp
+<apex:page >
+    {! $User.FirstName}
+</apex:page>
+
+Use Standard Controllers
+ContactView.vfp
+<apex:page standardController="Contact">
+    <apex:pageBlockSection >
+        First Name  : {! Contact.FirstName}
+        Last Name  : {! Contact.LastName}
+        Owner Email  : {! Contact.Owner.Email}
+    </apex:pageBlockSection>
+</apex:page>
+
+Display Records, Fields, and Tables
+OppView.vfp
+<apex:page standardController="Opportunity">
+    <apex:outputField value="{! Opportunity.Name}"/>
+    <apex:outputField value="{! Opportunity.Amount}"/>
+    <apex:outputField value="{! Opportunity.CloseDate}"/>
+    <apex:outputField value="{! Opportunity.Account.Name}"/>
+</apex:page>
+
+Input Data Using Forms
+CreateContact.vfp
+public class NewCaseListController {
+	
+    public List<Case> getNewCases(){
+        List<Case> filterList = [Select ID , CaseNumber from Case where status = 'New'];
+        return filterlist;
+    }
+}
+
+Use Standard List Controllers
+AccountList.vfp
+<apex:page standardController="Account" recordSetVar="accounts">
+    <apex:repeat var="a" value="{! accounts}">
+        <li>
+            <apex:outputLink value="/{!a.ID}">
+                <apex:outputText value="{! a.Name}"></apex:outputText>
+            </apex:outputLink>
+        </li>
+    </apex:repeat>
+</apex:page>
+
+Use Static Resources
+ShowImage.vfp
+<apex:page >
+    <apex:image url="{! URLFOR($Resource.vfimagetest,'cats/kitten1.jpg')}"/>
+</apex:page>
+
+Create & Use Custom Controllers
+NewCaseList.vfp
+<apex:page controller="NewCaseListController">
+    <apex:repeat var="case" value="{!newCases}">
+        <apex:outputLink value="/{!case.ID}">]
+	<apex:outputText value="{!case.CaseNumber}">
+            </apex:outputText>
+        </apex:outputLink>
+    </apex:repeat>
+</apex:page>
+NewCaseListController.apxc
+public class NewCaseListController {
+	
+    public List<Case> getNewCases(){
+        List<Case> filterList = [Select ID , CaseNumber from Case where status = 'New'];
+        return filterlist;
+    }
+}
